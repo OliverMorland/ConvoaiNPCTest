@@ -16,7 +16,8 @@ namespace Convai.Scripts.Utils
         Crouch,
         MoveTo,
         PickUp,
-        Drop
+        Drop,
+        Throw
     }
 
     /// <summary>
@@ -276,6 +277,10 @@ namespace Convai.Scripts.Utils
                     yield return Crouch();
                     break;
 
+                case ActionChoice.Throw:
+                    yield return Throw(action.Target);
+                    break;
+
                 case ActionChoice.None:
                     // Call the AnimationActions function and yield until it's completed
                     yield return AnimationActions(action.Animation);
@@ -461,6 +466,22 @@ namespace Convai.Scripts.Utils
         // STEP 3: Add the function for your action here.
 
         #region Action Implementation Methods
+
+        private IEnumerator Throw(GameObject target)
+        {
+            Debug.Log("Performing Throw");
+            _currentNPC.GetComponent<Animator>().CrossFade(Animator.StringToHash("Throw"), 0.05f);
+            yield return new WaitForSeconds(1.5f);
+            target.transform.parent = null;
+            target.SetActive(true);
+            target.transform.position += new Vector3(0.5f, 1.0f, 0.5f);
+            target.transform.rotation = Quaternion.identity;
+            Vector3 throwDirection = (transform.up + transform.forward).normalized;
+            target.GetComponent<Rigidbody>().AddForce(throwDirection * 10f, ForceMode.VelocityChange);
+            yield return new WaitForSeconds(1.5f);
+            _currentNPC.GetComponent<Animator>().CrossFade(Animator.StringToHash("Idle"), 0.05f);
+            yield return null;
+        }
 
         private IEnumerator Crouch()
         {
